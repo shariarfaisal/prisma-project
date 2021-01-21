@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+
+model Employee{
+  id          String @default(uuid()) @id
+  username    String @unique
+  password    String
+  role        EmployeeRole
+  isActive    Boolean @default(true)
+  isBlock     Boolean @default(false)
+  createdAt   DateTime @default(now())
+  profile     EmployeeProfile?
+}
+
+model EmployeeRole{
+  id          String @id @default(uuid())
+  name        String
+}
+
+model EmployeeProfile{
+  id           String @id @default(uuid())
+  name         String?
+  image_url    String?
+  phone        String?
+  employeeId   String
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  email        String? @unique
+}
+
+model Item{
+  id            String @id @default(uuid())
+  title         String
+  desc          String?
+  image         String?
+  subItems      Item[]
+  price         Int?
+  published     Boolean @default(true)
+  createdAt     DateTime @default(now())
+}
+
+enum PromoDiscountType{
+  PERCENTAGE
+  AMOUNT
+}
+
+model Promo{
+  id             String @id @default(uuid())
+  title          String?
+  limit          Int?
+  deadline       DateTime?
+  discountType   PromoDiscountType
+  discount       Int
+  published      Boolean @default(true)
+  createdAt      DateTime @default(now())
+  employeeId     String
+  employee       Employee @relation(fields: [employeeId],references: [id])
+}
+
+model ClientProfile{
+  id           String @id @default(uuid())
+  name         String?
+  address      String?
+  phone        String?
+  clientId     String
+  client       Client @relation(fields: [clientId],references: [id])
+}
+
+model Client{
+  id           String @id @default(uuid())
+  email        String @unique
+  password     String
+  createdAt    DateTime @default(now())
+  profile      ClientProfile?
+}
+
+model Vendor{
+  id          String @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  createdAt   DateTime @default(now())
+}
+
+model StockItem{
+  id          String @id @default(uuid())
+  itemId      String
+  item        Item @relation(fields:[itemId], references: [id])
+  quantity    Int @default(1)
+  price       Int?
+  average     Int?
+  stockId     String
+  stock       Stock @relation(fields: [stockId],references: [id])
+}
+
+model Stock{
+  id          String @id @default(uuid())
+  items       StockItem[]
+  amount      Int?
+  createdAt   DateTime @default(now())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+}
+
+model SalesItem{
+  id          String @id @default(uuid())
+  itemId      String
+  item        Item @relation(fields: [itemId],references: [id])
+  quantity    Int @default(1)
+  amount      Int
+}
+
+model Sale{
+  id          String @id @default(uuid())
+  desc        String?
+  items       SalesItem[]
+  amount      Int?
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId],references: [id])
+  createdAt   DateTime @default(now())
+}
